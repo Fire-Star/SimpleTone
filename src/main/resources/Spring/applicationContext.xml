@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/security
+       http://www.springframework.org/schema/security/spring-security.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+
+    <!-- Spring容器中注册非@controller注解的Bean -->
+    <context:component-scan base-package="cn.domarvel">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+    <!-- 视图解析器就用默认的 -->
+
+    <!-- 开启 SpringSecurity 注解，注意：因为要扫描Spring的注解，所以我要在这里配置打开SpringSecurity扫描
+        还有一点，在整个应用中，只能有一个地方配置这个内容！！
+    -->
+    <security:global-method-security
+            pre-post-annotations="enabled"
+            jsr250-annotations="enabled"
+            secured-annotations="enabled"
+    />
+
+    <!-- jackson 的 Json 转换器 -->
+    <bean id="objectMapper" class="com.fasterxml.jackson.databind.ObjectMapper" />
+</beans>

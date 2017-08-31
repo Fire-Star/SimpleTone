@@ -1,0 +1,68 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.2.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.2.xsd ">
+
+    <!-- 加载数据库配置文件 -->
+    <context:property-placeholder location="classpath:Spring/db.properties"/>
+
+    <!-- 配置数据源，使用c3p0 -->
+    <!-- 所以必须设定destroy-method=”close”属性， 以便Spring容器关闭时，数据源能够正常关闭。
+     -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.driver}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!-- 最大连接数量,通常设置为并发数量 。Default: 15-->
+        <property name="maxPoolSize" value="400"/>
+        <!-- 连接池中保留的最小连接数，空闲连接处于待命状态而不被清除 。 -->
+        <property name="minPoolSize" value="5" />
+        <!--初始化时获取的连接数，取值应在minPoolSize与maxPoolSize之间。Default: 3 -->
+        <property name="initialPoolSize" value="10"/>
+        <!--最大空闲时间,60秒内未使用则连接被丢弃。若为0则永不丢弃。Default: 0 -->
+        <property name="maxIdleTime" value="60" />
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。Default: 3 -->
+        <property name="acquireIncrement" value="5"/>
+        <!--每60秒检查所有连接池中的空闲连接。Default: 0 -->
+        <property name="idleConnectionTestPeriod" value="60"/>
+        <!--定义在从数据库获取新连接失败后重复尝试的次数。Default: 30 -->
+        <property name="acquireRetryAttempts" value="30"/>
+        <!--获取连接失败将会引起所有等待连接池来获取连接的线程抛出异常。但是数据源仍有效
+             保留，并在下次调用getConnection()的时候继续尝试获取连接。如果设为true，那么在尝试
+             获取连接失败后该数据源将申明已断开并永久关闭。Default: false-->
+        <property name="breakAfterAcquireFailure" value="false"/>
+    </bean>
+
+    <!-- sqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 加载mybatis的配置文件 -->
+        <property name="configLocation" value="classpath:MyBatis/sqlMapConfig.xml"/>
+        <!-- 数据源 -->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- mapper批量扫描，从Mapper包中扫描出mapper接口，自动创建代理对象，并且在spring容器中注册。
+        规范遵循：将mapper.java和mapper.xml映射文件名称保持一致，且在一个目录中。
+        自动扫描出来的mapper的bean的id为mapper类名（首字母小写）
+     -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 指定扫描的包名
+            如果扫描多个包，用这几个符号都可以分隔开",; \t\n"
+         -->
+        <property name="basePackage" value="cn.ejie.dao"/>
+        <!-- 不能用sqlSessionFactory，否则我们的<context:property-placeholder就不管用，最终导致数据库连不上。 -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+</beans>
